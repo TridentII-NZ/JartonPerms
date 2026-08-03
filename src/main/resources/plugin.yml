@@ -1,0 +1,7 @@
+name: JartonPerms
+version: '${version}'
+main: me.jarton.perms.JartonPerms
+api-version: '1.21'
+author: TridentII-NZ
+description: A flat, simple permissions plugin for JartonMC.
+softdepend: [LuckPerms]
