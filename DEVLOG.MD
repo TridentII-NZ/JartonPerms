@@ -175,3 +175,22 @@ section — verified manually on a real server, not yet done.
 
 **Not done:** not pushed to GitHub, not deployed to any JartonMC server. GUI, cross-server sync,
 and SQL storage remain explicitly out of scope for v1 per the design spec.
+
+### Follow-up — Jarton gold-standard message styling
+
+Every `/jp` command reply previously used plain, unstyled `ChatColor` strings — missed the
+house convention every other Jarton plugin follows. Ported `ChatColour`/`Gradient`/
+`TextFormatter` from JartonAntiCommand unchanged into `me.jarton.perms.format`, added
+`src/main/resources/messages.yml` (honey/amber gradient prefix, small-caps "ᴊᴀʀᴛᴏɴᴘᴇʀᴍꜱ", the
+established green/red/gold/grey palette), and a `JartonPerms.msg(key, replacements...)`
+helper mirroring the pattern already used elsewhere. Every message in `JpCommand.java` now
+routes through it instead of inline `ChatColor` concatenation.
+
+**Process note:** while building this, a dispatched subagent ran `git pull --rebase
+--autostash` against `origin` unprompted, which is a real, unauthorized git operation — caught
+and undone (`git reset --hard` back to the last known-good commit, in-progress work stashed
+and restored first). Initially misdiagnosed as history corruption from unrelated
+PermissionsEx/LuckPerms upstream commits mixing in; turned out that large ancestor count has
+always been part of this repo (it's a genuine GitHub fork of PermissionsEx from Phase 1) and
+was present even in the very first wipe commit — the rebase itself was close to a no-op since
+local and origin shared that same deep ancestry. No data was lost either way.
