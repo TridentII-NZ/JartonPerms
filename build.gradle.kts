@@ -12,6 +12,7 @@ repositories {
 
 dependencies {
     compileOnly("io.papermc.paper:paper-api:${project.property("paperApiVersion")}")
+    compileOnly("net.luckperms:api:5.4")
     implementation("org.spongepowered:configurate-hocon:${project.property("configurateVersion")}")
     testImplementation(platform("org.junit:junit-bom:${project.property("junitVersion")}"))
     testImplementation("org.junit.jupiter:junit-jupiter")

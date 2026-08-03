@@ -24,11 +24,13 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     private final DataStore dataStore;
     private final PluginConfig config;
     private final JoinListener joinListener;
+    private final me.jarton.perms.importer.LuckPermsImporter importer;
 
-    public JpCommand(DataStore dataStore, PluginConfig config, JoinListener joinListener) {
+    public JpCommand(DataStore dataStore, PluginConfig config, JoinListener joinListener, me.jarton.perms.importer.LuckPermsImporter importer) {
         this.dataStore = dataStore;
         this.config = config;
         this.joinListener = joinListener;
+        this.importer = importer;
     }
 
     @Override
@@ -62,6 +64,9 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 case "reload":
                     handleReload(sender);
                     break;
+                case "import":
+                    handleImport(sender, args);
+                    break;
                 default:
                     sendUsage(sender);
             }
@@ -72,7 +77,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     }
 
     private void sendUsage(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "JartonPerms — /jp user|group|ladder|promote|demote|reload");
+        sender.sendMessage(ChatColor.GOLD + "JartonPerms — /jp user|group|ladder|promote|demote|reload|import");
     }
 
     // ---- user ----
@@ -314,6 +319,22 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     private void handleReload(CommandSender sender) throws Exception {
         refreshAllOnline();
         sender.sendMessage(ChatColor.GREEN + "JartonPerms reloaded for all online players.");
+    }
+
+    // ---- import ----
+
+    private void handleImport(CommandSender sender, String[] args) throws Exception {
+        if (args.length < 2 || !args[1].equalsIgnoreCase("luckperms")) {
+            sender.sendMessage(ChatColor.RED + "Usage: /jp import luckperms");
+            return;
+        }
+        org.bukkit.plugin.Plugin luckPerms = Bukkit.getPluginManager().getPlugin("LuckPerms");
+        if (luckPerms == null || !luckPerms.isEnabled()) {
+            sender.sendMessage(ChatColor.RED + "LuckPerms is not installed or not enabled.");
+            return;
+        }
+        me.jarton.perms.importer.ImportResult result = importer.importFromLuckPerms();
+        sender.sendMessage(ChatColor.GREEN + result.summary());
     }
 
     // ---- helpers ----
