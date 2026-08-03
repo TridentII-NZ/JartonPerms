@@ -67,7 +67,8 @@ public class JoinListener implements Listener {
         if (oldUsername.isPresent()) {
             dataStore.renameUserFile(oldUsername.get(), currentUsername);
             uuidIndex.update(uuid, currentUsername);
-            return dataStore.loadUser(currentUsername).orElseGet(() -> newUser(uuid, currentUsername));
+            Optional<User> renamed = dataStore.loadUser(currentUsername);
+            return renamed.isPresent() ? renamed.get() : recoverMissingUser(uuid, currentUsername);
         }
 
         if (!uuidIndex.isKnown(uuid)) {
@@ -77,7 +78,25 @@ public class JoinListener implements Listener {
             return user;
         }
 
-        return dataStore.loadUser(currentUsername).orElseGet(() -> newUser(uuid, currentUsername));
+        Optional<User> existing = dataStore.loadUser(currentUsername);
+        return existing.isPresent() ? existing.get() : recoverMissingUser(uuid, currentUsername);
+    }
+
+    /**
+     * Called when the UUID index believes a player is known but no backing user file
+     * could be loaded for them (deleted/corrupted file, or a rename whose "old" file
+     * never actually existed). Rebuilds a fresh default-group {@link User} and, unlike
+     * the plain {@code newUser} case, persists it immediately so the recovered state
+     * isn't silently lost the moment the player disconnects, and logs a warning since
+     * this indicates an unexpected index/file inconsistency.
+     */
+    private User recoverMissingUser(UUID uuid, String currentUsername) throws Exception {
+        User user = newUser(uuid, currentUsername);
+        dataStore.saveUser(user);
+        plugin.getLogger().log(Level.WARNING,
+                "UUID index listed " + currentUsername + " (" + uuid
+                        + ") as known but no user file could be loaded; recreated and saved a default-group user.");
+        return user;
     }
 
     private User newUser(UUID uuid, String username) {
