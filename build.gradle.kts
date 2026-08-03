@@ -3,8 +3,8 @@ plugins {
 }
 
 val pexDescription: String by project
-group = "ca.stellardrift.permissionsex"
-version = "2.0-SNAPSHOT"
+group = "me.jarton.perms"
+version = "1.0-SNAPSHOT"
 description = pexDescription
 
 val collectExcludes = ext["buildExcludes"].toString().split(',').toSet()
@@ -19,7 +19,7 @@ val collectImplementationArtifacts by tasks.registering(Copy::class) {
     config.isTransitive = false
 
     from(config)
-    rename("(.+)-all(.+)", "PermissionsEx $1$2")
+    rename("(.+)-all(.+)", "JartonPerms $1$2")
     into("$buildDir/libs")
 
     doFirst {
