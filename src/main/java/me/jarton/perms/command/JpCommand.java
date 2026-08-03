@@ -1,5 +1,6 @@
 package me.jarton.perms.command;
 
+import me.jarton.perms.JartonPerms;
 import me.jarton.perms.config.PluginConfig;
 import me.jarton.perms.ladder.RankLadder;
 import me.jarton.perms.listener.JoinListener;
@@ -7,13 +8,11 @@ import me.jarton.perms.model.Group;
 import me.jarton.perms.model.User;
 import me.jarton.perms.store.DataStore;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +25,9 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     private final PluginConfig config;
     private final JoinListener joinListener;
     private final me.jarton.perms.importer.LuckPermsImporter importer;
-    private final Plugin plugin;
+    private final JartonPerms plugin;
 
-    public JpCommand(DataStore dataStore, PluginConfig config, JoinListener joinListener, me.jarton.perms.importer.LuckPermsImporter importer, Plugin plugin) {
+    public JpCommand(DataStore dataStore, PluginConfig config, JoinListener joinListener, me.jarton.perms.importer.LuckPermsImporter importer, JartonPerms plugin) {
         this.dataStore = dataStore;
         this.config = config;
         this.joinListener = joinListener;
@@ -39,7 +38,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!sender.hasPermission("jartonperms.admin")) {
-            sender.sendMessage(ChatColor.RED + "You do not have permission to use this command.");
+            sender.sendMessage(plugin.msg("no-permission"));
             return true;
         }
         if (args.length == 0) {
@@ -74,26 +73,26 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                     sendUsage(sender);
             }
         } catch (Exception e) {
-            sender.sendMessage(ChatColor.RED + "Command failed: " + e.getMessage());
+            sender.sendMessage(plugin.msg("command-failed", "error", e.getMessage()));
         }
         return true;
     }
 
     private void sendUsage(CommandSender sender) {
-        sender.sendMessage(ChatColor.GOLD + "JartonPerms — /jp user|group|ladder|promote|demote|reload|import");
+        sender.sendMessage(plugin.msg("usage-root"));
     }
 
     // ---- user ----
 
     private void handleUser(CommandSender sender, String[] args) throws Exception {
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /jp user <name> permission|group|info ...");
+            sender.sendMessage(plugin.msg("usage-user"));
             return;
         }
         String username = args[1];
         Optional<User> maybeUser = dataStore.loadUser(username);
         if (maybeUser.isEmpty()) {
-            sender.sendMessage(ChatColor.RED + "No JartonPerms data for '" + username + "' — they must join once first.");
+            sender.sendMessage(plugin.msg("user-not-found", "player", username));
             return;
         }
         User user = maybeUser.get();
@@ -102,7 +101,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
         switch (sub) {
             case "permission": {
                 if (args.length < 5) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /jp user <name> permission add|remove <node>");
+                    sender.sendMessage(plugin.msg("usage-user-permission"));
                     return;
                 }
                 String node = args[4];
@@ -113,18 +112,18 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 }
                 dataStore.saveUser(user);
                 refreshIfOnline(username, user);
-                sender.sendMessage(ChatColor.GREEN + "Updated " + username + "'s permission " + node);
+                sender.sendMessage(plugin.msg("user-permission-updated", "player", username, "permission", node));
                 break;
             }
             case "group": {
                 if (args.length < 5) {
-                    sender.sendMessage(ChatColor.RED + "Usage: /jp user <name> group add|remove <group>");
+                    sender.sendMessage(plugin.msg("usage-user-group"));
                     return;
                 }
                 String groupName = args[4];
                 if (args[3].equalsIgnoreCase("add")) {
                     if (dataStore.loadGroup(groupName).isEmpty()) {
-                        sender.sendMessage(ChatColor.RED + "No such group '" + groupName + "'.");
+                        sender.sendMessage(plugin.msg("group-not-found", "group", groupName));
                         return;
                     }
                     user.addGroup(groupName);
@@ -133,17 +132,17 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 }
                 dataStore.saveUser(user);
                 refreshIfOnline(username, user);
-                sender.sendMessage(ChatColor.GREEN + "Updated " + username + "'s groups.");
+                sender.sendMessage(plugin.msg("user-group-updated", "player", username));
                 break;
             }
             case "info": {
-                sender.sendMessage(ChatColor.GOLD + "User " + user.getUsername() + " (" + user.getUuid() + ")");
-                sender.sendMessage(ChatColor.GRAY + "Groups: " + String.join(", ", user.getGroups()));
-                sender.sendMessage(ChatColor.GRAY + "Own permissions: " + user.getPermissions());
+                sender.sendMessage(plugin.msg("user-info-header", "player", user.getUsername(), "uuid", String.valueOf(user.getUuid())));
+                sender.sendMessage(plugin.msg("user-info-groups", "groups", String.join(", ", user.getGroups())));
+                sender.sendMessage(plugin.msg("user-info-permissions", "permissions", String.valueOf(user.getPermissions())));
                 break;
             }
             default:
-                sender.sendMessage(ChatColor.RED + "Unknown subcommand '" + sub + "'.");
+                sender.sendMessage(plugin.msg("unknown-subcommand", "subcommand", sub));
         }
     }
 
@@ -151,46 +150,46 @@ public class JpCommand implements CommandExecutor, TabCompleter {
 
     private void handleGroup(CommandSender sender, String[] args) throws Exception {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /jp group create|delete|list|<name> ...");
+            sender.sendMessage(plugin.msg("usage-group"));
             return;
         }
         String first = args[1].toLowerCase();
 
         if (first.equals("list")) {
-            sender.sendMessage(ChatColor.GOLD + "Groups: " + String.join(", ", dataStore.listGroupNames()));
+            sender.sendMessage(plugin.msg("group-list", "groups", String.join(", ", dataStore.listGroupNames())));
             return;
         }
         if (first.equals("create")) {
             requireArg(args, 2, "/jp group create <name>");
             String name = args[2];
             if (dataStore.loadGroup(name).isPresent()) {
-                sender.sendMessage(ChatColor.RED + "Group '" + name + "' already exists.");
+                sender.sendMessage(plugin.msg("group-already-exists", "group", name));
                 return;
             }
             dataStore.saveGroup(new Group(name));
-            sender.sendMessage(ChatColor.GREEN + "Created group '" + name + "'.");
+            sender.sendMessage(plugin.msg("group-created", "group", name));
             return;
         }
         if (first.equals("delete")) {
             requireArg(args, 2, "/jp group delete <name>");
             if (dataStore.loadGroup(args[2]).isEmpty()) {
-                sender.sendMessage(ChatColor.RED + "No such group '" + args[2] + "'.");
+                sender.sendMessage(plugin.msg("group-not-found", "group", args[2]));
                 return;
             }
             dataStore.deleteGroup(args[2]);
-            sender.sendMessage(ChatColor.GREEN + "Deleted group '" + args[2] + "'.");
+            sender.sendMessage(plugin.msg("group-deleted", "group", args[2]));
             return;
         }
 
         String groupName = args[1];
         Optional<Group> maybeGroup = dataStore.loadGroup(groupName);
         if (maybeGroup.isEmpty()) {
-            sender.sendMessage(ChatColor.RED + "No such group '" + groupName + "'.");
+            sender.sendMessage(plugin.msg("group-not-found", "group", groupName));
             return;
         }
         Group group = maybeGroup.get();
         if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /jp group " + groupName + " permission|parent|prefix|suffix|option ...");
+            sender.sendMessage(plugin.msg("usage-group-subject", "group", groupName));
             return;
         }
         String action = args[2].toLowerCase();
@@ -206,7 +205,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 }
                 dataStore.saveGroup(group);
                 refreshAllOnline();
-                sender.sendMessage(ChatColor.GREEN + "Updated group '" + groupName + "' permission " + node);
+                sender.sendMessage(plugin.msg("group-permission-updated", "group", groupName, "permission", node));
                 break;
             }
             case "parent": {
@@ -219,7 +218,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 }
                 dataStore.saveGroup(group);
                 refreshAllOnline();
-                sender.sendMessage(ChatColor.GREEN + "Updated group '" + groupName + "' parents.");
+                sender.sendMessage(plugin.msg("group-parents-updated", "group", groupName));
                 break;
             }
             case "prefix":
@@ -229,7 +228,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 group.setOption(action, value);
                 dataStore.saveGroup(group);
                 refreshAllOnline();
-                sender.sendMessage(ChatColor.GREEN + "Set " + groupName + "'s " + action + ".");
+                sender.sendMessage(plugin.msg("group-option-updated", "group", groupName, "option", action));
                 break;
             }
             case "option": {
@@ -239,11 +238,11 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 group.setOption(key, value);
                 dataStore.saveGroup(group);
                 refreshAllOnline();
-                sender.sendMessage(ChatColor.GREEN + "Set " + groupName + "'s option '" + key + "'.");
+                sender.sendMessage(plugin.msg("group-option-updated", "group", groupName, "option", "option '" + key + "'"));
                 break;
             }
             default:
-                sender.sendMessage(ChatColor.RED + "Unknown subcommand '" + action + "'.");
+                sender.sendMessage(plugin.msg("unknown-subcommand", "subcommand", action));
         }
     }
 
@@ -251,7 +250,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
 
     private void handleLadder(CommandSender sender, String[] args) throws Exception {
         if (args.length < 2) {
-            sender.sendMessage(ChatColor.RED + "Usage: /jp ladder create|delete|<name> ...");
+            sender.sendMessage(plugin.msg("usage-ladder"));
             return;
         }
         String first = args[1].toLowerCase();
@@ -260,20 +259,20 @@ public class JpCommand implements CommandExecutor, TabCompleter {
             requireArg(args, 2, "/jp ladder create <name>");
             config.createLadder(args[2]);
             config.save();
-            sender.sendMessage(ChatColor.GREEN + "Created ladder '" + args[2] + "'.");
+            sender.sendMessage(plugin.msg("ladder-created", "ladder", args[2]));
             return;
         }
         if (first.equals("delete")) {
             requireArg(args, 2, "/jp ladder delete <name>");
             config.deleteLadder(args[2]);
             config.save();
-            sender.sendMessage(ChatColor.GREEN + "Deleted ladder '" + args[2] + "'.");
+            sender.sendMessage(plugin.msg("ladder-deleted", "ladder", args[2]));
             return;
         }
 
         Optional<RankLadder> maybeLadder = config.getLadder(args[1]);
         if (maybeLadder.isEmpty()) {
-            sender.sendMessage(ChatColor.RED + "No such ladder '" + args[1] + "'.");
+            sender.sendMessage(plugin.msg("ladder-not-found", "ladder", args[1]));
             return;
         }
         RankLadder ladder = maybeLadder.get();
@@ -285,7 +284,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
             ladder.removeGroup(groupName);
         }
         config.save();
-        sender.sendMessage(ChatColor.GREEN + "Updated ladder '" + args[1] + "'.");
+        sender.sendMessage(plugin.msg("ladder-updated", "ladder", args[1]));
     }
 
     // ---- promote / demote ----
@@ -297,12 +296,12 @@ public class JpCommand implements CommandExecutor, TabCompleter {
 
         Optional<RankLadder> maybeLadder = config.getLadder(ladderName);
         if (maybeLadder.isEmpty()) {
-            sender.sendMessage(ChatColor.RED + "No such ladder '" + ladderName + "'.");
+            sender.sendMessage(plugin.msg("ladder-not-found", "ladder", ladderName));
             return;
         }
         Optional<User> maybeUser = dataStore.loadUser(username);
         if (maybeUser.isEmpty()) {
-            sender.sendMessage(ChatColor.RED + "No JartonPerms data for '" + username + "'.");
+            sender.sendMessage(plugin.msg("user-not-found", "player", username));
             return;
         }
         User user = maybeUser.get();
@@ -310,7 +309,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
 
         Optional<String> target = promote ? ladder.promote(user.getGroups()) : ladder.demote(user.getGroups());
         if (target.isEmpty()) {
-            sender.sendMessage(ChatColor.RED + username + " cannot be " + (promote ? "promoted" : "demoted") + " on that ladder.");
+            sender.sendMessage(plugin.msg("promote-demote-no-target", "player", username, "direction", promote ? "promoted" : "demoted"));
             return;
         }
 
@@ -318,35 +317,35 @@ public class JpCommand implements CommandExecutor, TabCompleter {
         user.addGroup(target.get());
         dataStore.saveUser(user);
         refreshIfOnline(username, user);
-        sender.sendMessage(ChatColor.GREEN + username + " is now in '" + target.get() + "'.");
+        sender.sendMessage(plugin.msg("promote-demote-success", "player", username, "group", target.get()));
     }
 
     // ---- reload ----
 
     private void handleReload(CommandSender sender) throws Exception {
         refreshAllOnline();
-        sender.sendMessage(ChatColor.GREEN + "JartonPerms reloaded for all online players.");
+        sender.sendMessage(plugin.msg("reload-success"));
     }
 
     // ---- import ----
 
     private void handleImport(CommandSender sender, String[] args) {
         if (args.length < 2 || !args[1].equalsIgnoreCase("luckperms")) {
-            sender.sendMessage(ChatColor.RED + "Usage: /jp import luckperms");
+            sender.sendMessage(plugin.msg("usage-import"));
             return;
         }
         org.bukkit.plugin.Plugin luckPerms = Bukkit.getPluginManager().getPlugin("LuckPerms");
         if (luckPerms == null || !luckPerms.isEnabled()) {
-            sender.sendMessage(ChatColor.RED + "LuckPerms is not installed or not enabled.");
+            sender.sendMessage(plugin.msg("luckperms-not-found"));
             return;
         }
-        sender.sendMessage(ChatColor.YELLOW + "Import started, this may take a moment...");
+        sender.sendMessage(plugin.msg("import-started"));
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 me.jarton.perms.importer.ImportResult result = importer.importFromLuckPerms();
-                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(ChatColor.GREEN + result.summary()));
+                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(plugin.msg("import-success", "summary", result.summary())));
             } catch (Exception e) {
-                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(ChatColor.RED + "Import failed: " + e.getMessage()));
+                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(plugin.msg("import-failed", "error", e.getMessage())));
             }
         });
     }

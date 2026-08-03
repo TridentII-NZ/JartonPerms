@@ -1,0 +1,45 @@
+prefix: "[gradient:#FFE082,#FFB81C:b]ᴊᴀʀᴛᴏɴᴘᴇʀᴍꜱ[/gradient]&r &#5C5C5C» "
+
+messages:
+  no-permission: "%prefix% &#E94B4BYou do not have permission to use this command."
+  command-failed: "%prefix% &#E94B4BCommand failed: &#C9C9C9{error}"
+  usage-root: "%prefix% &#FFB81CJartonPerms &#5C5C5C— &#C9C9C9/jp user|group|ladder|promote|demote|reload|import"
+
+  usage-user: "%prefix% &#E94B4BUsage: /jp user <name> permission|group|info ..."
+  user-not-found: "%prefix% &#E94B4BNo JartonPerms data for &#FFD700{player}&#E94B4B — they must join once first."
+  usage-user-permission: "%prefix% &#E94B4BUsage: /jp user <name> permission add|remove <node>"
+  user-permission-updated: "%prefix% &#A9E673Updated &#FFD700{player}&#A9E673's permission &#FFB81C{permission}&#A9E673."
+  usage-user-group: "%prefix% &#E94B4BUsage: /jp user <name> group add|remove <group>"
+  user-group-updated: "%prefix% &#A9E673Updated &#FFD700{player}&#A9E673's groups."
+  user-info-header: "%prefix% &#FFB81CUser &#FFD700{player} &#5C5C5C({uuid})"
+  user-info-groups: "%prefix% &#5C5C5Cɢʀᴏᴜᴘs &#C9C9C9{groups}"
+  user-info-permissions: "%prefix% &#5C5C5Cᴘᴇʀᴍɪssɪᴏɴs &#C9C9C9{permissions}"
+  unknown-subcommand: "%prefix% &#E94B4BUnknown subcommand &#FFD700{subcommand}&#E94B4B."
+
+  usage-group: "%prefix% &#E94B4BUsage: /jp group create|delete|list|<name> ..."
+  group-list: "%prefix% &#FFB81CGroups: &#C9C9C9{groups}"
+  group-not-found: "%prefix% &#E94B4BNo such group &#FFD700{group}&#E94B4B."
+  group-already-exists: "%prefix% &#E94B4BGroup &#FFD700{group}&#E94B4B already exists."
+  group-created: "%prefix% &#A9E673Created group &#FFD700{group}&#A9E673."
+  group-deleted: "%prefix% &#A9E673Deleted group &#FFD700{group}&#A9E673."
+  usage-group-subject: "%prefix% &#E94B4BUsage: /jp group {group} permission|parent|prefix|suffix|option ..."
+  group-permission-updated: "%prefix% &#A9E673Updated group &#FFD700{group}&#A9E673's permission &#FFB81C{permission}&#A9E673."
+  group-parents-updated: "%prefix% &#A9E673Updated group &#FFD700{group}&#A9E673's parents."
+  group-option-updated: "%prefix% &#A9E673Set &#FFD700{group}&#A9E673's &#FFB81C{option}&#A9E673."
+
+  usage-ladder: "%prefix% &#E94B4BUsage: /jp ladder create|delete|<name> ..."
+  ladder-created: "%prefix% &#A9E673Created ladder &#FFD700{ladder}&#A9E673."
+  ladder-deleted: "%prefix% &#A9E673Deleted ladder &#FFD700{ladder}&#A9E673."
+  ladder-not-found: "%prefix% &#E94B4BNo such ladder &#FFD700{ladder}&#E94B4B."
+  ladder-updated: "%prefix% &#A9E673Updated ladder &#FFD700{ladder}&#A9E673."
+
+  promote-demote-no-target: "%prefix% &#E94B4B{player} cannot be {direction} on that ladder."
+  promote-demote-success: "%prefix% &#A9E673{player} is now in &#FFD700{group}&#A9E673."
+
+  reload-success: "%prefix% &#A9E673JartonPerms reloaded for all online players."
+
+  usage-import: "%prefix% &#E94B4BUsage: /jp import luckperms"
+  luckperms-not-found: "%prefix% &#E94B4BLuckPerms is not installed or not enabled."
+  import-started: "%prefix% &#FFD700Import started, this may take a moment..."
+  import-success: "%prefix% &#A9E673{summary}"
+  import-failed: "%prefix% &#E94B4BImport failed: &#C9C9C9{error}"
