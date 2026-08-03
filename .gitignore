@@ -16,3 +16,6 @@ build/
 /idea/
 .DS_Store
 .*.swp
+
+# git worktree scratch (not tracked)
+.worktrees/
