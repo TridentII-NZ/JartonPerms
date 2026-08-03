@@ -37,7 +37,7 @@ dependencies {
         sequenceOf("asm", "asm-util", "asm-tree", "asm-analysis").forEach {
             implementation("org.ow2.asm:$it") {
                 version { require("9.7.1") }
-                because("Newer plugin versions need a newer ASM")
+                because("spigradle's detectSpigotMain scans Java 21 (major version 65) class files; 9.2 only understands up to Java 18 (major version 62)")
             }
         }
 

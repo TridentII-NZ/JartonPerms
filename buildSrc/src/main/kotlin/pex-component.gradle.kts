@@ -8,6 +8,12 @@ plugins {
 
 group = "me.jarton.perms"
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+}
+
 repositories {
     mavenCentral()
 }

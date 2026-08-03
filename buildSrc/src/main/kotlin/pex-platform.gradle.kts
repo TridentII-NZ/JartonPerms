@@ -40,10 +40,8 @@ val shadowJar = tasks.named("shadowJar", ShadowJar::class) {
 
 val validateShadowing by tasks.registering(ArchiveAllowedClasses::class) {
     input.from(shadowJar)
-    // Task 4 rebranded the source tree from ca.stellardrift.permissionsex to me.jarton.perms
-    // (and pexRelocationRoot to me.jarton.perms.ext for shaded dependencies), but this
-    // allowlist was never updated to match — every shadowJar failed shading validation as a
-    // result, since none of its classes fall under the old ca.stellardrift package anymore.
+    // Must match the project's package root — shaded/relocated dependencies land under
+    // <root>.ext, everything else under <root>
     allowedPackages.add("me.jarton.perms")
 }
 

@@ -1,6 +1,4 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
-import java.time.LocalDate
-import java.time.ZoneOffset
 import kr.entree.spigradle.data.Load
 import kr.entree.spigradle.kotlin.spigot
 
