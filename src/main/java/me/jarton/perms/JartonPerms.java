@@ -23,7 +23,7 @@ public final class JartonPerms extends JavaPlugin {
                     new me.jarton.perms.importer.LuckPermsImporter(dataStore, uuidIndex);
 
             getServer().getPluginManager().registerEvents(joinListener, this);
-            JpCommand jpCommand = new JpCommand(dataStore, config, joinListener, importer);
+            JpCommand jpCommand = new JpCommand(dataStore, config, joinListener, importer, this);
             getCommand("jp").setExecutor(jpCommand);
             getCommand("jp").setTabCompleter(jpCommand);
 

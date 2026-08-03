@@ -13,6 +13,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,14 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     private final PluginConfig config;
     private final JoinListener joinListener;
     private final me.jarton.perms.importer.LuckPermsImporter importer;
+    private final Plugin plugin;
 
-    public JpCommand(DataStore dataStore, PluginConfig config, JoinListener joinListener, me.jarton.perms.importer.LuckPermsImporter importer) {
+    public JpCommand(DataStore dataStore, PluginConfig config, JoinListener joinListener, me.jarton.perms.importer.LuckPermsImporter importer, Plugin plugin) {
         this.dataStore = dataStore;
         this.config = config;
         this.joinListener = joinListener;
         this.importer = importer;
+        this.plugin = plugin;
     }
 
     @Override
@@ -323,7 +326,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
 
     // ---- import ----
 
-    private void handleImport(CommandSender sender, String[] args) throws Exception {
+    private void handleImport(CommandSender sender, String[] args) {
         if (args.length < 2 || !args[1].equalsIgnoreCase("luckperms")) {
             sender.sendMessage(ChatColor.RED + "Usage: /jp import luckperms");
             return;
@@ -333,8 +336,15 @@ public class JpCommand implements CommandExecutor, TabCompleter {
             sender.sendMessage(ChatColor.RED + "LuckPerms is not installed or not enabled.");
             return;
         }
-        me.jarton.perms.importer.ImportResult result = importer.importFromLuckPerms();
-        sender.sendMessage(ChatColor.GREEN + result.summary());
+        sender.sendMessage(ChatColor.YELLOW + "Import started, this may take a moment...");
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            try {
+                me.jarton.perms.importer.ImportResult result = importer.importFromLuckPerms();
+                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(ChatColor.GREEN + result.summary()));
+            } catch (Exception e) {
+                Bukkit.getScheduler().runTask(plugin, () -> sender.sendMessage(ChatColor.RED + "Import failed: " + e.getMessage()));
+            }
+        });
     }
 
     // ---- helpers ----
