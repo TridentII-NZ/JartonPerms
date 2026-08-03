@@ -21,14 +21,13 @@ plugins {
 }
 
 repositories {
-    maven("https://repo.stellardrift.ca/repository/stable/") {
-        name = "stellardriftReleases"
-        mavenContent { releasesOnly() }
+    maven("https://maven.fabricmc.net/") {
+        name = "fabricMaven"
     }
-    maven("https://repo.stellardrift.ca/repository/snapshots/") {
-        name = "stellardriftSnapshots"
-        mavenContent { snapshotsOnly() }
+    maven("https://plugins.gradle.org/m2/") {
+        name = "gradlePluginPortalMaven"
     }
+    mavenCentral()
     gradlePluginPortal()
 }
 
@@ -36,28 +35,15 @@ dependencies {
     constraints {
         sequenceOf("asm", "asm-util", "asm-tree", "asm-analysis").forEach {
             implementation("org.ow2.asm:$it") {
-                version { require("9.0") }
-                because("Fabric's TinyRemapper requires ASM 9")
+                version { require("9.2") }
+                because("Newer plugin versions need a newer ASM")
             }
         }
     }
 
-    val opinionatedVersion = "4.2.1"
-    val indraVersion = "1.3.1"
-    implementation("ca.stellardrift:gradle-plugin-opinionated-common:$opinionatedVersion")
-    implementation("ca.stellardrift:gradle-plugin-opinionated-kotlin:$opinionatedVersion")
-    implementation("ca.stellardrift:gradle-plugin-opinionated-fabric:$opinionatedVersion")
-    implementation("net.kyori:indra-common:$indraVersion")
-    implementation("ca.stellardrift:gradle-plugin-localization:$opinionatedVersion")
-    implementation("ca.stellardrift:gradle-plugin-templating:$opinionatedVersion")
-    implementation("ca.stellardrift:gradle-plugin-configurate:$opinionatedVersion")
+    implementation("ca.stellardrift:gradle-plugin-localization:6.2.0")
+    implementation("ca.stellardrift:gradle-plugin-templating:6.0.1")
     implementation("com.github.jengelman.gradle.plugins:shadow:6.1.0")
-    implementation("kr.entree:spigradle:2.2.3")
-    implementation("net.ltgt.gradle:gradle-errorprone-plugin:1.3.0")
     implementation(kotlin("gradle-plugin", "1.4.21"))
     implementation(kotlin("reflect"))
-}
-
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
 }
