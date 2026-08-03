@@ -40,6 +40,18 @@ dependencies {
                 because("Newer plugin versions need a newer ASM")
             }
         }
+
+        // shadow's minimize{} feature (UnusedTracker) resolves classes via org.vafer:jdependency,
+        // which bundles its own *shaded, relocated* copy of ASM internally
+        // (org.vafer.jdeb.shaded.objectweb.asm) rather than using the external org.ow2.asm
+        // dependency above — shadow's own POM even excludes org.ow2.asm from jdependency's
+        // transitive deps, so the org.ow2.asm constraint above can't reach this copy at all.
+        // Pinned at 2.8.0 by shadow:8.1.1; 2.13 bundles a newer ASM that understands Java 21
+        // class files.
+        implementation("org.vafer:jdependency") {
+            version { require("2.13") }
+            because("2.8.0's internally-shaded ASM can't read Java 21 class files")
+        }
     }
 
     implementation("ca.stellardrift:gradle-plugin-localization:6.2.0")
