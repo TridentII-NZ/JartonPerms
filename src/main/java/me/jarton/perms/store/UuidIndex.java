@@ -33,6 +33,10 @@ public class UuidIndex {
         return index.containsKey(uuid);
     }
 
+    public Optional<String> getUsername(UUID uuid) {
+        return Optional.ofNullable(index.get(uuid));
+    }
+
     public void update(UUID uuid, String username) throws ConfigurateException {
         index.put(uuid, username);
         persist();

@@ -60,4 +60,19 @@ class UuidIndexTest {
         assertTrue(second.isKnown(SAMPLE_UUID));
         assertEquals(Optional.of("Steve"), second.checkRename(SAMPLE_UUID, "NewName"));
     }
+
+    @Test
+    void getUsernameReturnsTheCurrentlyIndexedUsername(@TempDir Path tempDir) throws Exception {
+        UuidIndex index = new UuidIndex(tempDir);
+        index.update(SAMPLE_UUID, "Steve");
+
+        assertEquals(Optional.of("Steve"), index.getUsername(SAMPLE_UUID));
+    }
+
+    @Test
+    void getUsernameIsEmptyForAnUnknownUuid(@TempDir Path tempDir) throws Exception {
+        UuidIndex index = new UuidIndex(tempDir);
+
+        assertEquals(Optional.empty(), index.getUsername(SAMPLE_UUID));
+    }
 }

@@ -360,6 +360,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
         if (player != null) {
             joinListener.apply(player, user);
         }
+        Bukkit.getPluginManager().callEvent(new me.jarton.perms.api.PermissionChangeEvent());
     }
 
     private void refreshAllOnline() throws Exception {
@@ -369,6 +370,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 joinListener.apply(player, user.get());
             }
         }
+        Bukkit.getPluginManager().callEvent(new me.jarton.perms.api.PermissionChangeEvent());
     }
 
     @Override
