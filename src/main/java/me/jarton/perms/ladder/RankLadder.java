@@ -1,13 +1,20 @@
 package me.jarton.perms.ladder;
 
+import org.spongepowered.configurate.objectmapping.ConfigSerializable;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@ConfigSerializable
 public class RankLadder {
 
-    private final String name;
-    private final List<String> groups = new ArrayList<>();
+    private String name;
+    private List<String> groups = new ArrayList<>();
+
+    // No-arg constructor required by Configurate's ObjectMapper.
+    public RankLadder() {
+    }
 
     public RankLadder(String name) {
         this.name = name;
