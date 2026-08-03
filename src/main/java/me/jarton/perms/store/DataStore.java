@@ -9,6 +9,7 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -52,10 +53,17 @@ public class DataStore {
         save(userFile(user.getUsername()), User.class, user);
     }
 
-    public void renameUserFile(String oldUsername, String newUsername) throws IOException {
-        Path oldFile = userFile(oldUsername);
-        if (Files.exists(oldFile)) {
-            Files.move(oldFile, userFile(newUsername));
+    public void renameUserFile(String oldUsername, String newUsername) throws ConfigurateException {
+        Optional<User> user = loadUser(oldUsername);
+        if (user.isPresent()) {
+            user.get().setUsername(newUsername);
+            // Usernames are reused across time; stale files at the target path are overwritten, not an error.
+            save(userFile(newUsername), User.class, user.get());
+            try {
+                Files.deleteIfExists(userFile(oldUsername));
+            } catch (IOException e) {
+                throw new ConfigurateException("Failed to delete old user file: " + oldUsername, e);
+            }
         }
     }
 

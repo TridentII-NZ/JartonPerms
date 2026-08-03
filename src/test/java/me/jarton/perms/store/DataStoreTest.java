@@ -98,4 +98,27 @@ class DataStoreTest {
         assertTrue(Files.isDirectory(tempDir.resolve("groups")));
         assertTrue(Files.isDirectory(tempDir.resolve("users")));
     }
+
+    @Test
+    void renamingAUserFileOverwritesStaleFileAtTargetUsername(@TempDir Path tempDir) throws Exception {
+        DataStore store = new DataStore(tempDir);
+        UUID oldUuid = UUID.fromString("00000000-0000-0000-0000-000000000001");
+        UUID newUuid = UUID.fromString("00000000-0000-0000-0000-000000000002");
+
+        // Save a stale file (different user) at the target username.
+        User staleUser = new User(newUuid, "TargetName");
+        store.saveUser(staleUser);
+
+        // Rename from a different username to the target, which should overwrite the stale file.
+        User renamedUser = new User(oldUuid, "OldName");
+        store.saveUser(renamedUser);
+
+        store.renameUserFile("OldName", "TargetName");
+
+        // Target file now has the renamed-from user's data, not the stale data.
+        Optional<User> loaded = store.loadUser("TargetName");
+        assertTrue(loaded.isPresent());
+        assertEquals(oldUuid, loaded.get().getUuid());
+        assertEquals("TargetName", loaded.get().getUsername());
+    }
 }
