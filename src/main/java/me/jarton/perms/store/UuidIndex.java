@@ -6,15 +6,15 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class UuidIndex {
 
     private final Path indexFile;
-    private final Map<UUID, String> index = new HashMap<>();
+    private final Map<UUID, String> index = new ConcurrentHashMap<>();
 
     public UuidIndex(Path baseDir) throws ConfigurateException {
         this.indexFile = baseDir.resolve("uuid-index.conf");
@@ -57,7 +57,7 @@ public class UuidIndex {
         }
     }
 
-    private void persist() throws ConfigurateException {
+    private synchronized void persist() throws ConfigurateException {
         HoconConfigurationLoader loader = HoconConfigurationLoader.builder().path(indexFile).build();
         CommentedConfigurationNode node = loader.createNode();
         for (Map.Entry<UUID, String> entry : index.entrySet()) {

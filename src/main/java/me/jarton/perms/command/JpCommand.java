@@ -173,6 +173,10 @@ public class JpCommand implements CommandExecutor, TabCompleter {
         }
         if (first.equals("delete")) {
             requireArg(args, 2, "/jp group delete <name>");
+            if (dataStore.loadGroup(args[2]).isEmpty()) {
+                sender.sendMessage(ChatColor.RED + "No such group '" + args[2] + "'.");
+                return;
+            }
             dataStore.deleteGroup(args[2]);
             sender.sendMessage(ChatColor.GREEN + "Deleted group '" + args[2] + "'.");
             return;
@@ -358,12 +362,14 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     private void refreshIfOnline(String username, User user) throws Exception {
         Player player = Bukkit.getPlayerExact(username);
         if (player != null) {
+            joinListener.reloadGroupCache();
             joinListener.apply(player, user);
         }
         Bukkit.getPluginManager().callEvent(new me.jarton.perms.api.PermissionChangeEvent());
     }
 
     private void refreshAllOnline() throws Exception {
+        joinListener.reloadGroupCache();
         for (Player player : Bukkit.getOnlinePlayers()) {
             Optional<User> user = dataStore.loadUser(player.getName());
             if (user.isPresent()) {
@@ -376,7 +382,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
         if (args.length == 1) {
-            return filter(args[0], List.of("user", "group", "ladder", "promote", "demote", "reload"));
+            return filter(args[0], List.of("user", "group", "ladder", "promote", "demote", "reload", "import"));
         }
         if (args.length == 2 && (args[0].equalsIgnoreCase("user") || args[0].equalsIgnoreCase("promote") || args[0].equalsIgnoreCase("demote"))) {
             return filter(args[1], Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList()));

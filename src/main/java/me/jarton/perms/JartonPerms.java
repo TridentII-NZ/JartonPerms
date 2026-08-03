@@ -17,6 +17,12 @@ public final class JartonPerms extends JavaPlugin {
             DataStore dataStore = new DataStore(getDataFolder().toPath());
             UuidIndex uuidIndex = new UuidIndex(getDataFolder().toPath());
             PluginConfig config = new PluginConfig(getDataFolder().toPath());
+
+            if (dataStore.loadGroup(config.getDefaultGroup()).isEmpty()) {
+                dataStore.saveGroup(new me.jarton.perms.model.Group(config.getDefaultGroup()));
+            }
+            config.save();
+
             PermissionResolver resolver = new PermissionResolver();
             JoinListener joinListener = new JoinListener(this, dataStore, uuidIndex, config, resolver);
             me.jarton.perms.importer.LuckPermsImporter importer =
@@ -35,7 +41,7 @@ public final class JartonPerms extends JavaPlugin {
 
             getLogger().info("JartonPerms enabled.");
         } catch (Exception e) {
-            getLogger().severe("Failed to enable JartonPerms: " + e.getMessage());
+            getLogger().log(java.util.logging.Level.SEVERE, "Failed to enable JartonPerms", e);
             getServer().getPluginManager().disablePlugin(this);
         }
     }

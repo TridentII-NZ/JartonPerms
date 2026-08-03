@@ -9,8 +9,8 @@ import org.spongepowered.configurate.hocon.HoconConfigurationLoader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -21,6 +21,7 @@ public class DataStore {
 
     private final Path groupsDir;
     private final Path usersDir;
+    private final Object lock = new Object();
 
     public DataStore(Path baseDir) throws IOException {
         this.groupsDir = baseDir.resolve("groups");
@@ -68,19 +69,23 @@ public class DataStore {
     }
 
     private <T> Optional<T> load(Path file, Class<T> type) throws ConfigurateException {
-        if (!Files.exists(file)) {
-            return Optional.empty();
+        synchronized (lock) {
+            if (!Files.exists(file)) {
+                return Optional.empty();
+            }
+            HoconConfigurationLoader loader = HoconConfigurationLoader.builder().path(file).build();
+            CommentedConfigurationNode node = loader.load();
+            return Optional.ofNullable(node.get(type));
         }
-        HoconConfigurationLoader loader = HoconConfigurationLoader.builder().path(file).build();
-        CommentedConfigurationNode node = loader.load();
-        return Optional.ofNullable(node.get(type));
     }
 
     private <T> void save(Path file, Class<T> type, T value) throws ConfigurateException {
-        HoconConfigurationLoader loader = HoconConfigurationLoader.builder().path(file).build();
-        CommentedConfigurationNode node = loader.createNode();
-        node.set(type, value);
-        loader.save(node);
+        synchronized (lock) {
+            HoconConfigurationLoader loader = HoconConfigurationLoader.builder().path(file).build();
+            CommentedConfigurationNode node = loader.createNode();
+            node.set(type, value);
+            loader.save(node);
+        }
     }
 
     private Set<String> listNames(Path directory) throws IOException {
@@ -96,10 +101,18 @@ public class DataStore {
     }
 
     private Path groupFile(String name) {
+        validateName(name);
         return groupsDir.resolve(name + FILE_EXTENSION);
     }
 
     private Path userFile(String username) {
-        return usersDir.resolve(username + FILE_EXTENSION);
+        validateName(username);
+        return usersDir.resolve(username.toLowerCase(Locale.ROOT) + FILE_EXTENSION);
+    }
+
+    private static void validateName(String name) {
+        if (!name.matches("^[A-Za-z0-9_.\\-]{1,64}$")) {
+            throw new IllegalArgumentException("Invalid name: " + name);
+        }
     }
 }

@@ -11,6 +11,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionAttachment;
 import org.bukkit.plugin.Plugin;
@@ -31,6 +32,7 @@ public class JoinListener implements Listener {
     private final PluginConfig config;
     private final PermissionResolver resolver;
     private final Map<UUID, PermissionAttachment> attachments = new HashMap<>();
+    private Map<String, Group> groupCache = new HashMap<>();
 
     public JoinListener(
             Plugin plugin,
@@ -43,6 +45,11 @@ public class JoinListener implements Listener {
         this.uuidIndex = uuidIndex;
         this.config = config;
         this.resolver = resolver;
+        try {
+            reloadGroupCache();
+        } catch (Exception e) {
+            plugin.getLogger().log(Level.SEVERE, "Failed to load group cache on startup", e);
+        }
     }
 
     @EventHandler
@@ -54,6 +61,30 @@ public class JoinListener implements Listener {
         } catch (Exception e) {
             plugin.getLogger().log(Level.SEVERE, "Failed to load JartonPerms data for " + player.getName(), e);
         }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        attachments.remove(event.getPlayer().getUniqueId());
+    }
+
+    /**
+     * Re-reads every group file from disk into {@link #groupCache}. Called once per
+     * refresh operation (startup, {@code /jp reload}, and any single edit that pushes
+     * new permissions to online players) rather than once per player, so refreshing
+     * many online players in one operation doesn't re-read the groups directory once
+     * per player.
+     */
+    public void reloadGroupCache() throws Exception {
+        Map<String, Group> reloaded = new HashMap<>();
+        for (String groupName : dataStore.listGroupNames()) {
+            dataStore.loadGroup(groupName).ifPresent(group -> reloaded.put(groupName, group));
+        }
+        this.groupCache = reloaded;
+    }
+
+    public Map<String, Group> getGroupCache() {
+        return groupCache;
     }
 
     /**
@@ -113,20 +144,19 @@ public class JoinListener implements Listener {
      * synthetic join event.
      */
     public void apply(Player player, User user) throws Exception {
-        Map<String, Group> groups = new HashMap<>();
-        for (String groupName : dataStore.listGroupNames()) {
-            dataStore.loadGroup(groupName).ifPresent(group -> groups.put(groupName, group));
-        }
-
         Set<String> knownPermissionNodes = Bukkit.getPluginManager().getPermissions().stream()
                 .map(Permission::getName)
                 .collect(Collectors.toSet());
 
-        Map<String, Boolean> effective = resolver.resolve(user, groups, knownPermissionNodes);
+        Map<String, Boolean> effective = resolver.resolve(user, groupCache, knownPermissionNodes);
 
         PermissionAttachment previous = attachments.remove(player.getUniqueId());
         if (previous != null) {
-            player.removeAttachment(previous);
+            try {
+                player.removeAttachment(previous);
+            } catch (IllegalArgumentException ignored) {
+                // Attachment belonged to a stale Permissible from a previous session; nothing to remove.
+            }
         }
         PermissionAttachment attachment = player.addAttachment(plugin);
         effective.forEach(attachment::setPermission);
