@@ -3,7 +3,7 @@ plugins {
     antlr
 }
 
-configurations.compile {
+configurations.implementation {
     exclude("org.antlr", "antlr4")
 }
 

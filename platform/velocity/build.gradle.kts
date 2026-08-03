@@ -36,6 +36,8 @@ repositories {
         metadataSources { artifact() }
         content { includeModule("com.velocitypowered", "velocity-proxy") }
     }
+    // velocity-api isn't on Maven Central; VelocityPowered's artifacts moved under PaperMC's host.
+    maven("https://repo.papermc.io/repository/maven-public/") { name = "papermc" }
 }
 
 dependencies {
@@ -59,6 +61,15 @@ dependencies {
 
     annotationProcessor(shadow("com.velocitypowered:velocity-api:$velocityVersion")!!)
     velocityRunClasspath("com.velocitypowered:velocity-proxy:$velocityVersion")
+}
+
+// velocity-api's POM (at every 1.1.x version) declares a compile-scope dependency on
+// net.kyori:adventure-text-serializer-legacy-text3:4.0.0-SNAPSHOT, a snapshot that was never
+// promoted and no longer exists on any live repository. It's an internal legacy-text bridge
+// this codebase never references directly, so exclude it from the configurations that pull
+// velocity-api in rather than chase a nonexistent artifact.
+configurations.matching { it.name == "shadow" || it.name == "annotationProcessor" }.configureEach {
+    exclude("net.kyori", "adventure-text-serializer-legacy-text3")
 }
 
 pexPlatform {

@@ -1,6 +1,3 @@
-import ca.stellardrift.build.common.adventure
-import ca.stellardrift.build.common.configurate
-
 plugins {
     id("pex-component")
 }
@@ -15,8 +12,8 @@ dependencies {
     val slf4jVersion: String by project
 
     api("org.pcollections:pcollections:$pCollectionsVersion")
-    api(adventure("api", adventureVersion))
-    implementation(adventure("text-serializer-plain", adventureVersion))
-    api(configurate("core", configurateVersion))
+    api("net.kyori:adventure-api:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
+    api("org.spongepowered:configurate-core:$configurateVersion")
     api("org.slf4j:slf4j-api:$slf4jVersion")
 }

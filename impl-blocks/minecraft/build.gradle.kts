@@ -1,5 +1,3 @@
-import ca.stellardrift.build.common.adventure
-
 /*
  * PermissionsEx
  * Copyright (C) zml and PermissionsEx contributors
@@ -22,14 +20,28 @@ plugins {
     id("ca.stellardrift.localization")
 }
 
+// pex-component only wires up mavenCentral(); com.mojang:brigadier isn't published there,
+// only on Mojang's own library host (which the Bukkit module's spigradle plugin normally
+// adds automatically, but this module compiles independently of that plugin).
+repositories {
+    maven("https://libraries.minecraft.net/") {
+        name = "mojang"
+    }
+}
+
 useImmutables()
 dependencies {
+    val adventureVersion: String by project
     val cloudVersion: String by project
+    val errorproneVersion: String by project
     val immutablesVersion: String by project
+
+    // See core/build.gradle.kts: this module's source also references @DoNotCall directly.
+    compileOnly("com.google.errorprone:error_prone_annotations:$errorproneVersion")
 
     api(project(":api"))
     api(project(":core"))
-    implementation(adventure("text-serializer-plain"))
+    implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
     compileOnlyApi("org.immutables:gson:$immutablesVersion")
     runtimeOnly(project(":datastore:sql"))
     api("cloud.commandframework:cloud-core:$cloudVersion")

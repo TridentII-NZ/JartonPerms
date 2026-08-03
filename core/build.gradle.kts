@@ -1,7 +1,4 @@
 
-import ca.stellardrift.build.common.adventure
-import ca.stellardrift.build.common.configurate
-
 /*
  * PermissionsEx
  * Copyright (C) zml and PermissionsEx contributors
@@ -31,26 +28,33 @@ useImmutables()
 dependencies {
     val adventureVersion: String by project
     val configurateVersion: String by project
+    val errorproneVersion: String by project
     val h2Version: String by project
     val junitVersion: String by project
     val slf4jVersion: String by project
 
+    // errorprone's annotation processor was dropped along with the rest of the removed
+    // opinionated/errorprone plugin chain (Task 1), but this module's source still uses
+    // @LazyInit (com.google.errorprone.annotations.concurrent) — keep just the annotations
+    // jar as compileOnly so those references resolve, without re-adding the checker itself.
+    compileOnly("com.google.errorprone:error_prone_annotations:$errorproneVersion")
+
     api(project(":api"))
     api(project(":impl-blocks:legacy"))
 
-    api(platform(configurate("bom", configurateVersion)))
-    api(configurate("gson"))
-    api(configurate("hocon"))
-    implementation(configurate("yaml"))
+    api(platform("org.spongepowered:configurate-bom:$configurateVersion"))
+    api("org.spongepowered:configurate-gson")
+    api("org.spongepowered:configurate-hocon")
+    implementation("org.spongepowered:configurate-yaml")
     implementation("com.github.ben-manes.caffeine:caffeine:2.9.0") {
         exclude("com.google.errorprone")
     }
     implementation("com.google.guava:guava:21.0")
     implementation(project(":impl-blocks:glob"))
 
-    api(adventure("api", adventureVersion))
-    implementation(adventure("text-serializer-plain", adventureVersion))
-    implementation(adventure("text-serializer-legacy", adventureVersion))
+    api("net.kyori:adventure-api:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-plain:$adventureVersion")
+    implementation("net.kyori:adventure-text-serializer-legacy:$adventureVersion")
     api("org.slf4j:slf4j-api:$slf4jVersion")
 
     testImplementation("org.slf4j:slf4j-jdk14:$slf4jVersion")

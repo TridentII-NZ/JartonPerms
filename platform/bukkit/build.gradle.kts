@@ -1,6 +1,3 @@
-import ca.stellardrift.build.common.adventure
-import ca.stellardrift.build.common.configurate
-import ca.stellardrift.build.common.gpl3
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -14,19 +11,20 @@ plugins {
     id("kr.entree.spigradle")
 }
 
-indra {
-    gpl3()
-}
-
 java {
     registerFeature("h2dbSupport") {
         usingSourceSet(sourceSets["main"])
     }
 }
 
-license {
-    header = file("LICENSE_HEADER")
-    ext["year"] = LocalDate.now(ZoneOffset.UTC).year
+// spigradle bundles the dead papermc.io/repo host (now 403s) as one of its default repos;
+// the working hosts have to be added explicitly for spigot-api's bungeecord-chat dependency,
+// the spigot-api snapshot itself, and the two `shadow(...)` runtime-only plugin deps below.
+repositories {
+    maven("https://repo.papermc.io/repository/maven-public/") { name = "papermc" }
+    maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/") { name = "spigotmc" }
+    maven("https://maven.enginehub.org/repo/") { name = "enginehub" }
+    maven("https://nexus.hc.to/content/repositories/pub_releases/") { name = "vault" }
 }
 
 dependencies {
@@ -42,10 +40,10 @@ dependencies {
     }
 
     implementation(project(":impl-blocks:hikari-config"))
-    implementation(configurate("yaml")) {
+    implementation("org.spongepowered:configurate-yaml") {
         exclude("org.yaml", "snakeyaml")
     }
-    implementation(adventure("platform-bukkit", adventurePlatformVersion)) {
+    implementation("net.kyori:adventure-platform-bukkit:$adventurePlatformVersion") {
         exclude("com.google.code.gson")
     }
     implementation("cloud.commandframework:cloud-paper:$cloudVersion")
@@ -92,7 +90,19 @@ pexPlatform {
     )
 }
 
+// spigradle's generateSpigotDescription writes plugin.yml straight into build/resources/main
+// without registering itself as an output of processResources, so Gradle 8's stricter
+// task-dependency validation flags every task that reads main's output as having an undeclared
+// implicit dependency. Can't wire this onto processResources — generateSpigotDescription itself
+// depends on `classes` (it inspects compiled classes to detect the plugin main class), and
+// classes depends on processResources, so that would be circular. Declare it directly on the
+// two tasks that actually package resources/main instead.
+tasks.jar {
+    dependsOn(tasks.generateSpigotDescription)
+}
+
 val shadowJar by tasks.getting(ShadowJar::class) {
+    dependsOn(tasks.generateSpigotDescription)
     dependencies {
         exclude("org.yaml:snakeyaml")
     }
