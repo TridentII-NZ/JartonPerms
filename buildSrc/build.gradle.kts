@@ -21,9 +21,6 @@ plugins {
 }
 
 repositories {
-    maven("https://maven.fabricmc.net/") {
-        name = "fabricMaven"
-    }
     maven("https://plugins.gradle.org/m2/") {
         name = "gradlePluginPortalMaven"
     }
@@ -44,6 +41,9 @@ dependencies {
     implementation("ca.stellardrift:gradle-plugin-localization:6.2.0")
     implementation("ca.stellardrift:gradle-plugin-templating:6.0.1")
     implementation("com.github.jengelman.gradle.plugins:shadow:6.1.0")
+    implementation("kr.entree:spigradle:2.2.3") {
+        exclude(group = "kr.entree", module = "spigradle-annotations")
+    }
     implementation(kotlin("gradle-plugin", "1.4.21"))
     implementation(kotlin("reflect"))
 }
