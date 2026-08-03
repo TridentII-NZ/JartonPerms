@@ -5,3 +5,14 @@ api-version: '1.21'
 author: TridentII-NZ
 description: A flat, simple permissions plugin for JartonMC.
 softdepend: [LuckPerms]
+
+commands:
+  jp:
+    description: Manage JartonPerms users, groups, and ladders.
+    aliases: [pex]
+    permission: jartonperms.admin
+
+permissions:
+  jartonperms.admin:
+    description: Full access to JartonPerms commands.
+    default: op
