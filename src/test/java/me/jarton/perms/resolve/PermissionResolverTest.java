@@ -138,4 +138,22 @@ class PermissionResolverTest {
 
         assertTrue(result.isEmpty());
     }
+
+    @Test
+    void aGroupThatAppearsAsAncestorAndLaterInOwnListWinsWhenListed() {
+        Group defaultGroup = new Group("default");
+        defaultGroup.setPermission("perm.x", true);
+        Group vip = new Group("vip");
+        vip.addParent("default");
+        vip.setPermission("perm.x", false);
+
+        User user = new User(SAMPLE_UUID, "Steve");
+        user.addGroup("vip");
+        user.addGroup("default");
+
+        Map<String, Boolean> result = resolver.resolve(
+            user, Map.of("default", defaultGroup, "vip", vip), Set.of("perm.x"));
+
+        assertEquals(true, result.get("perm.x"));
+    }
 }
