@@ -19,3 +19,6 @@ build/
 
 # git worktree scratch (not tracked)
 .worktrees/
+
+# subagent-driven-development scratch (not tracked)
+.superpowers/
