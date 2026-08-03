@@ -121,4 +121,17 @@ class DataStoreTest {
         assertEquals(oldUuid, loaded.get().getUuid());
         assertEquals("TargetName", loaded.get().getUsername());
     }
+
+    @Test
+    void renamingAUserFileWithOnlyACaseChangeDoesNotDeleteTheData(@TempDir Path tempDir) throws Exception {
+        DataStore store = new DataStore(tempDir);
+        store.saveUser(new User(SAMPLE_UUID, "Steve"));
+
+        store.renameUserFile("Steve", "STEVE");
+
+        Optional<User> loaded = store.loadUser("STEVE");
+        assertTrue(loaded.isPresent());
+        assertEquals("STEVE", loaded.get().getUsername());
+        assertEquals(SAMPLE_UUID, loaded.get().getUuid());
+    }
 }

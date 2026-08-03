@@ -60,6 +60,11 @@ public class DataStore {
             user.get().setUsername(newUsername);
             // Usernames are reused across time; stale files at the target path are overwritten, not an error.
             save(userFile(newUsername), User.class, user.get());
+            // Case-only renames (e.g. "Steve" -> "STEVE") resolve to the same lowercase file path;
+            // deleting it here would wipe the update just saved above.
+            if (userFile(oldUsername).equals(userFile(newUsername))) {
+                return;
+            }
             try {
                 Files.deleteIfExists(userFile(oldUsername));
             } catch (IOException e) {
