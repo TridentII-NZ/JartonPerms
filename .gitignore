@@ -2,18 +2,15 @@
 .classpath
 .factorypath
 .settings/
-.vscode
+.vscode/
+.idea/
+*.iml
 
 .gradle/
 
-/platform/*/debug/
-/platform/*/run/
 build/
 /bin
 /dist
-/.idea/
-/PermissionsEx.iml
-/idea/
 .DS_Store
 .*.swp
 
