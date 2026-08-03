@@ -226,6 +226,7 @@ public class JpCommand implements CommandExecutor, TabCompleter {
                 String value = String.join(" ", java.util.Arrays.copyOfRange(args, 5, args.length));
                 group.setOption(key, value);
                 dataStore.saveGroup(group);
+                refreshAllOnline();
                 sender.sendMessage(ChatColor.GREEN + "Set " + groupName + "'s option '" + key + "'.");
                 break;
             }
