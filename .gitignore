@@ -19,3 +19,7 @@ build/
 
 # subagent-driven-development scratch (not tracked)
 .superpowers/
+
+# Swifty dev log - format file, never committed
+SWIFTY-DEVLOG.md
+swiftydevlog.md
